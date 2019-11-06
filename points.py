@@ -33,8 +33,10 @@ def main():
         c.draw(win)
 
     # remove redundant i.e. b = a+1...n
-    for a in points:
-        for b in points:
+    for ax in range(len(points)):
+        a = points[ax]
+        for bx in range(ax, len(points)):
+            b = points[bx]
             if a == b:
                 continue
             l = Line(a, b)
