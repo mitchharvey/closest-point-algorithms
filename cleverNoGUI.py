@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-from time import sleep
 import math
 import sys
 import json
@@ -41,8 +40,8 @@ def main():
     minimum = locate(points, yPoints)
     print("MINIMUM: ", minimum)
     print("COMPARES: ", compareCount)
-    print("N^2        = {}\nN log(N^2) = {}\nN log(N)   = {}\nN          = {}"
-        .format(N**2, N*math.log(N**2, 2), N*math.log(N, 2), N))
+    # print("N^2        = {}\nN log(N^2) = {}\nN log(N)   = {}\nN          = {}"
+    #     .format(N**2, N*math.log(N**2, 2), N*math.log(N, 2), N))
 
 def getPoints():
     with open(sys.argv[1], "r") as inPoints:
