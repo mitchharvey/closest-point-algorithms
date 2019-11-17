@@ -65,10 +65,13 @@ def locate(points, yPoints):
     # print("POINTS:", points, "MIDEL:", midEl, "PASS1:", points[:midEl+1], "PASSB", points[midEl+1:], "\n")
     midX = (points[midEl].getX() + points[midEl + 1].getX())/2
     midLine = Line(Point(midX, 0), Point(midX, height))
+    mult = (len(points)/N)
+    # col = math.floor(mult * 255)
+    # midLine.setFill(color_rgb(128, col, 0))
     midLine.setFill("green")
-    width = math.floor((len(points)/N) * baseWidth)
+    width = math.floor(mult * baseWidth)
     midLine.setWidth(width)
-    midLine.draw(win)
+    # midLine.draw(win)
 
     leftX = points[0:midEl+1]
     rightX = points[midEl+1:len(points)]
@@ -138,19 +141,30 @@ def restrictSet(set, lowerBound, higherBound):
     return retset
 
 def dist(a, b):
-    global compareCount
+    global compareCount, shortestDist, shortestDistLine
     compareCount += 1
     l = Line(a, b)
-    l.setFill("pink")
+    l.setWidth(3)
+    l.setFill("white")
     l.draw(win)
     xDist = abs(b.getX() - a.getX())
     yDist = abs(b.getY() - a.getY())
-    # sleep(1)
-    l.undraw()
-    return ((xDist ** 2) + (yDist ** 2)) ** 0.5
+    dist = ((xDist ** 2) + (yDist ** 2)) ** 0.5
+
+    if dist < shortestDist:
+        shortestDist = dist
+        shortestDistLine.setWidth(1)
+        shortestDistLine.setFill("grey")
+        l.setFill(color_rgb(255, 10, 214))
+        shortestDistLine = l
+    else:
+        l.setWidth(1)
+        l.setFill("grey")
+        # l.undraw()
+    return dist
 
 
 if __name__ == "__main__":
     main()
-    # x = input("")
+    x = input("")
     print("done")

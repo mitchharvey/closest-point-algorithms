@@ -22,7 +22,7 @@ win = GraphWin("Points", width, height)
 win.setBackground("black")
 
 def main():
-    global shortestDist, shortestDistLine
+    global shortestDist, shortestDistLine, compareCount
     points = getPoints()
     N = len(points)
 
@@ -31,6 +31,11 @@ def main():
         c.setFill("white")
         c.setOutline("white")
         c.draw(win)
+
+    t = Text(Point(30, 30), "H")
+    t.setSize(20)
+    t.setTextColor("white")
+    t.draw(win)
 
     # remove redundant i.e. b = a+1...n
     for ax in range(len(points)):
@@ -41,6 +46,7 @@ def main():
                 continue
             l = Line(a, b)
             l.setFill("white")
+            l.setWidth(3)
             l.draw(win)
 
             d = dist(a, b)
@@ -52,12 +58,14 @@ def main():
                 # shortestDistLine.setOutline("white")
                 shortestDistLine.setWidth(3)
                 shortestDistLine.draw(win)
-            l.undraw()
+            l.setFill(color_rgb(50, 50, 50))
+
+            t.setText(str(round(100*compareCount/(((N*N) - N)/2), 1))+"%")
 
     print("MINIMUM: ", shortestDist)
     print("COMPARES: ", compareCount)
-    print("N^2        = {}\nN log(N^2) = {}\nN log(N)   = {}\nN          = {}"
-        .format(N**2, N*math.log(N**2, 2), N*math.log(N, 2), N))
+    # print("N^2        = {}\nN log(N^2) = {}\nN log(N)   = {}\nN          = {}"
+    #     .format(N**2, N*math.log(N**2, 2), N*math.log(N, 2), N))
 
 def getPoints():
     if len(sys.argv) > 1:
@@ -80,5 +88,4 @@ def dist(a, b):
 
 if __name__ == "__main__":
     main()
-    x = input("")
     print("done")
