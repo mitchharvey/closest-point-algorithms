@@ -1,0 +1,366 @@
+\documentclass[12pt]{report}
+%\usepackage[a5paper]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{lingmacros}
+\usepackage{tree-dvips}
+\usepackage{ragged2e}
+\usepackage{multirow}
+\usepackage{placeins}
+\usepackage{caption}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{listings}
+\lstset
+{
+    language=Matlab,
+    numbers=left,
+    stepnumber=1,
+    showstringspaces=false,
+    tabsize=8,
+    breaklines=true,
+    breakatwhitespace=false,
+    xleftmargin=1em,
+    %frame=single,
+    numbersep=5pt,
+}
+
+
+\newcommand\mylstcaption{}
+
+\surroundwithmdframed[
+hidealllines=true,
+middleextra={
+  \node[anchor=west] at (O|-P)
+    {\lstlistingname~\thelstlisting\  (Cont.):~\mylstcaption};},
+secondextra={
+  \node[anchor=west] at (O|-P)
+    {\lstlistingname~\thelstlisting\  (Cont.):~\mylstcaption};},
+splittopskip=2\baselineskip
+]{lstlisting}
+
+
+\begin{document}
+
+\title{Comparing Algorithms for Finding the Closest Pair of Points in a 2D Plane}
+\author{David Corbin, Mitchell Harvey and Kyu-Hyeon Lee\\COMP 422, Grove City College}
+\date{November 10, 2019}
+\maketitle
+
+\section*{Introduction}
+
+The problem we are trying to solve is given $n$ points in metric space,
+we want to find a pair of points with the smallest Euclidean distance between the 
+points (including points at the same position).
+
+\begin{center}
+\includegraphics[width=10cm]{diagram4}
+\\\textbf{Figure 1.} The solution to finding the two closest points in a 2D plane.
+\end{center}
+The closest pair problem is an interesting algorithmic problem with many practical applications. 
+For one, air traffic control systems use the closest pair of points algorithm and similar algorithms to direct 
+planes on the ground and in the air. The problem itself comes from the field of computational 
+geometry, the branch of computer science devoted to the study of algorithms that can be stated in terms of geometry.
+
+
+\subsection*{Finding the Distance Between Two Points}
+
+To find the distance between two points on a 2D plane, we use the distance formula: 
+
+$$d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$
+\\Geometrically, the distance formula is the length of the hypotenuse of a triangle.
+
+
+\section*{Brute Force Algorithm}
+
+The straightforward solution is to check the distance between every possible pair of points and find the shortest distance. 
+This can be done in a brute force way with a nested for loop.
+\\
+\\
+\textbf{Input:} An array of points; each point having an $x$ and $y$ value
+\\
+\textbf{Output:} The two points with the smallest distance between them
+
+\subsection*{Pseudocode for the Brute Force Algorithm}
+
+\renewcommand\mylstcaption{Pseudocode for the Divide and Conquer Algorithm}
+\begin{lstlisting}[language=Python, caption=\mylstcaption, label=lst:c1]
+findClosestPoints(points[]):
+	minDistance = Infinity
+	closestA = null
+	closestB = null
+	for a in (0..points.len-1):
+		for b in (a+1..points.len-1):
+			d = dist(points[a], points[b])
+			if (d < minDistance):
+				minDistance = d
+				closestA = points[a]
+				closestB = points[b]
+	return [closestA, closestB]
+\end{lstlisting}
+
+
+
+\subsection*{Explanation}
+
+The algorithm starts by defining the minimum distance to infinity (on line 2) so that the first two points compared will become 
+the minimum distance. The two closest points, \textit{closestA} and \textit{closestB}, are set to null initially because there are no points checked before the algorithm starts. 
+\\\\
+The first for loop (on line 5) loops through the array of points starting with the first element in the array. 
+The most naive brute force solution would go through all the points in the array and check all points in the 
+array starting at the beginning of the array each time. In this case, you would check the distance between 
+point A and B and would check the distance between point B and A. Of course, those distances are the same 
+and checking both directions does a significant amount of extra work. This would result in exactly $n^2-n$ 
+operations or $\theta{(n^2-n)}$ runtime. An optimization would be not checking the distance between two 
+points that have already been checked as shown in the pseudocode above. 
+\\\\
+The inner loop on line 6 loops through all the remaining elements to check the distance between each 
+remaining point in the 2D plane. You can see that we are not checking the distance between points that 
+have already been checked. This slight change results in half the number of checked elements or $(n^2-n)/2$
+ operations although this is still an order of $n^2$ algorithm.
+\\\\
+On line 7, we check the distance between the points with the distance formula. This is a constant 
+time operation. The remaining lines of the inner for loop check if the distance is less than the 
+previous minimum distance and update the minimum distance if it is.
+
+\subsection*{Runtime of the Brute Force Algorithm}
+
+This results in a time complexity of $\theta{(n2)}$ . This is because we loop through every point, then inside 
+that loop we loop through every other point, and then compare the distance of those two points. The 
+brute force algorithm is in place and the memory consumption $\theta{(n)}$.
+
+
+\section*{Divide and Conquer Solution}
+
+To get a better algorithm, we look to use a divide and conquer approach. We use an algorithm that is recursive, splitting the problem into two equal subproblems.
+
+\subsection*{Summary of the Algorithm}
+
+\begin{enumerate}
+ \item Copy the input points into two arrays $A_x$ and $A_y$.
+ \item Sort $A_x$ by $x$ coordinates, and $A_y$ by $y$ coordinates.
+ \item Divide $A_x$ into two equal subsets, $p_{left}$ and $p_{right}$.
+ \item Find some vertical line $mid_x$ so that all the points in $p_{left} <= mid_x$ and all the points in $p_{right} > mid_x$.
+ \item Find the minimum distance between the points in each subset, $d_{left}$ and $d_{right}$.
+ \item Find the minimum of $d_{left}$ and $d_{right}$ called $d$.
+ \item Get the subset of points from $A_y$ within $d$ distance of $mid_x$ called $p_{center}$.
+ \item Check the distance of every point in $p_{center}$ to the next seven points based on decreasing $y$ coordinate. Call the minimum distance $d_{center}$.
+ \item Return the minimum of $d$ and $d_{center}$.
+\end{enumerate}
+
+\subsection*{Explanation}
+
+We first make two arrays containing the same points. We sort the first array by $x$ coordinates, then sort the second array by $y$ coordinates. The reason 
+we have both arrays is important later.
+\\\\
+Note that we can't afford to sort the arrays and subarrays inside the loop and attain our intended time complexity. Thus, we must presort the arrays so that 
+we can achieve $O(n$ lg $n)$ time complexity.
+\\\\
+We then divide the array of points into two equal subarrays and call the vertical line that separates the halves $L$. Then we recursively find the pair of closest 
+points in each half, $d_{left}$ and $d_{left}$. 
+
+\begin{center}
+\includegraphics[width=9cm]{diagram3}
+\\\textbf{Figure 2.} Divide the set of points in the middle and find the closest points in each half.
+\end{center}
+We then find the minimum distance between the two closest points in each half; $d = min(d_{left}, d_{right})$. However, we’re not done yet because there could be 
+points that were split between the two subsets that are closer than the closest points in each subset. Since we know that we already have two points that 
+are $d$ units away from each other, we only need to check for points that are within $d$ units away from $L$. We call this subset of points $p_{center}$.
+
+\begin{center}
+\includegraphics[width=8cm]{diagram1}
+\\\textbf{Figure 3.} We need only check points within $d$ to the left and right of $L$.
+\end{center}
+We copy from $A_y$ to get the points in $p_{center}$. This way $p_{center}$ is already sorted by $y$ coordinate. Then our subset $p_{center}$ is formed in $\theta{(n)}$ time, which is important 
+to achieve $O(n$ lg $n)$ total runtime.
+\\\\
+Finding the minimum distance by checking all possible distances between points would not let us complete this step in linear time, so we need a better solution. 
+It turns out we can actually find this minimum distance in linear time:
+\\\\
+We already know that the minimum distance we have found so far is $d$, so we only are interested in distances that are shorter than this. Because of this 
+qualification, we actually only need to check a maximum of seven distances for each point. We can prove this geometrically as shown in Figure 4. If every 
+point in $p_{left}$ and in $p_{right}$ in is exactly $d$ distance apart, then any possible closer points to a point $p$ in $p_{center}$ will be one of the following seven points. 
+This is because the seventh point has to be at least $d$ distance away. Using this to our advantage, we only check the next seven points for each point in $p_{center}$. 
+This means that this step is completed in $O(n)$ time.
+\\\\
+After we complete this step we just have to compare $d$ to the smallest distance we found in $p_{center}$ and return the smallest distance.
+
+\begin{center}
+\includegraphics[width=10cm]{diagram2}
+\\\textbf{Figure 4.} Check a maximum of seven distances for each point.
+\end{center}
+
+\subsection*{Runtime of the Divide and Conquer Solution}
+We can find the total runtime of the algorithm by first finding the runtime of the recursive steps:
+
+\begin{enumerate}
+\item Divide $A_x$ into two equal subsets, $p_{left}$ and $p_{right}$.
+\item Find some vertical line $mid_x$ so that all the points in $p_{left} \leq mid_x$ and all the points in $p_{right} > mid_x$.
+\item $2T(n/2)$: Recursively find the minimum distance between the points in each subset, $d_{left}$ and $d_{right}$.
+\item Find the minimum of $d_{left}$ and $d_{right}$ called $d$.
+\item $\theta{(n)}$: Get the subset of points from Ay within d distance of $mid_x$ called $p_{center}$.
+\item $O(n)$: Check the distance of every point in $p_{center}$ to the next seven points based on decreasing $y$ coordinate. Call the minimum distance $d_{center}$.
+\item Return the minimum of $d$ and $d_{center}$.
+\end{enumerate}
+We can represent this as a recurrence: $T(n) = 2T(n/2) + O(n)$. Then by using the master method we find that this recursive section has a time complexity of $O(n$ lg $n)$.
+\\\\
+Then our full algorithm can be broken down into these steps as follows:
+\begin{enumerate}
+\item Copy the input points into two arrays $A_x$ and $A_y$.
+\item $O(n$ lg $n)$: Sort $A_x$ by $x$ coordinates.
+\item $O(n$ lg $n)$: Sort $A_y$ by $y$ coordinates.
+\item $O(n$ lg $n)$: Recursively find shortest distance of points.
+\end{enumerate}
+So the total runtime is $O(n$ lg $n)$. We cannot give an accurate big theta bound, since when we check the points in the center, there is no guarantee of how many points we will need to check in $p_{center}$.
+
+\renewcommand\mylstcaption{Pseudocode for the Divide and Conquer Algorithm}
+\begin{lstlisting}[language=Python, caption=\mylstcaption, label=lst:c1]
+findClosestPoints(points[], ypoints[]):
+    // If 3 points or less then just return shortest distance
+    if (points.len <= 3):
+        minimum = Infinity
+        for a in (0..points.len-1):
+            for b in (a+1..points.len-1):
+                if (a == b): continue
+                minimum = min(minimum, dist(a, b))
+        return minimum
+		
+    // Split points into two equal subarrays
+    mid = floor((points.len-1) / 2)
+    midX = (points[mid].x + points[mid + 1].x) / 2
+    leftPoints = points[0..mid]
+    rightPoints = points[mid+1..points.len-1]
+    // Get points on each side sorted by y coordinate
+    leftYPoints, rightYPoints = getYPoints(ypoints, midX)
+                
+    // Recurse on the subproblems
+    leftMin = findClosestPoints(leftPoints, leftYPoints)
+    rightMin = findClosestPoints(rightPoints, rightYPoints)
+
+    // Find the min of the left and right minimum distances
+    overallMin = min(leftMin, rightMin)
+
+    // get subset of points within overallMin distance 
+    // of vertical line at midX (Figure 3)
+    centerPoints = getCenterPoints(yPoints, midX, overallMin)
+    // Find minimum distance in center points
+    centerMin = findClosestCenter(centerPoints)
+
+    // Find minimum overall
+    return min(overallMin, centerMin)
+
+    getYPoints(ypoints, midX):
+        rightYPoints = []
+        leftYPoints = []
+        for p in ypoints:
+            if p.x <= midX:
+                leftYPoints.append(p)
+            else:
+                rightYPoints.append(p)
+	return leftYPoints, rightYPoints
+
+
+    getCenterPoints(points, centerLine, dist):
+        centerPoints = []
+        lowerBound = centerLine - dist
+        upperBound = centerLine + dist
+        for i in (0..points.len):
+             p = points[i]
+             if p.x >= lowerBound && p.x <= upperBound:
+                 centerPoints.append(p)
+        return centerPoints
+
+    findClosestCenter(points):
+        minimum = Infinity
+        for i in (0..points.len):
+            // Check the next 7 points if there are >= 7 points
+            numCheck = min(7, points.len - i - 1)
+            for j in (0..numCheck):
+                d = dist(points[i], points[i + j + 1])
+                minimum = min(minimum, d)
+	return minimum
+\end{lstlisting}
+
+\subsection*{Real World Performance}
+
+We implemented the two algorithms in Python and ran them with various input sizes. 
+As you can see, there are several orders of magnitude improvement in the runtimes of the clever algorithm. 
+It’s clear that even for relatively small in‌‌‌‌‌‌put sizes, the clever algorithm with a runtime of $O(n$ log $n)$
+performs significantly better than the $O(n^2)$ brute force solution.
+
+
+\begin{table}[hbt!]
+\centering
+\begin{tabular}{lrrrr}
+\multicolumn{5}{c}{\textbf{Real World Results}}                                                                                                                                                           \\
+\multirow{2}{*}{\textbf{Input Size}} & \multicolumn{2}{c}{\textbf{Brute Force}}                                     & \multicolumn{2}{c}{\textbf{Clever}}                                          \\
+                                        & \multicolumn{1}{c}{\textbf{Runtime (s)}} & \multicolumn{1}{c}{\textbf{Compares}} & \multicolumn{1}{c}{\textbf{Runtime (s)}} & \multicolumn{1}{c}{\textbf{Compares}} \\
+500                                  & 0.251                                & 124750                                & 0.071                                & 5096                                  \\
+1000                                 & 0.753                                & 499500                                & 0.082                                & 11401                                 \\
+1500                                 & 1.638                                & 1124250                               & 0.115                                & 18520                                 \\
+2000                                 & 2.990                                & 1999000                               & 0.127                                & 26771                                 \\
+2500                                 & 4.534                                & 3123750                               & 0.176                                & 34937                                 \\
+3000                                 & 6.202                                & 4498500                               & 0.215                                & 45650                                 \\
+3500                                 & 8.823                                & 6123250                               & 0.206                                & 52302                                 \\
+4000                                 & 11.452                               & 7998000                               & 0.300                                & 59959                                 \\
+4500                                 & 16.524                               & 10122750                              & 0.315                                & 71821                                 \\
+5000                                 & 20.771                               & 12497500                              & 0.290                                & 81356                                
+\end{tabular}
+\end{table}
+
+
+\FloatBarrier
+\subsection*{Extensions of the Closest Pair of Points Problem}
+While our project only covers finding the closest pair of points over a 2D plane, the algorithm can 
+be extended to find the t​​​​​​​​​wo closest points in a $d$-dimensional space. It's trivial to see that the 
+naive solution would have a worst case running time of $O(dn^2)$. With the divide and conquer solution, 
+the worst case running time is $O(n * (log(n))^{(d-1)})$ for a normal $d$-dimensional space. However, there 
+are point sparsity requirements as the number of dimensions increase to avoid ed​ge cases.
+
+
+
+
+\begin{thebibliography}{9}
+
+\bibitem{subsur} 
+Subhash Suri.
+\textit{Closest Pair Problem}. 
+UC Santa Barbara.
+\\\texttt{https://sites.cs.ucsb.edu/\textasciitilde suri/cs235/ClosestPair.pdf}
+  
+\bibitem{kings} 
+Carl Kingsford.
+\textit{Closest Pair of Points}. 
+Carnegie Mellon University.
+\\\texttt{https://www.cs.cmu.edu/\textasciitilde ckingsf/bioinfo-lectures/closepoints.pdf}
+
+\bibitem{hadz}
+Vassos Hadzilacos.
+\textit{Algorithm to find the closest pair of points}. 
+University of Toronto.
+\\\texttt{http://www.cs.toronto.edu/\textasciitilde vassos/teaching/c73/handouts/}
+
+\bibitem{cormen} 
+Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford Stein.
+\textit{Introduction to Algorithms}. 
+The MIT Press.
+
+\bibitem{fort} 
+Steve Fortune, John Hopcroft.
+\textit{ A Note On Rabin’s Nearest-Neighbor Algorithm}. 
+Department of Computer Science at Cornell University.
+
+\bibitem{mount} 
+David M. Mount.
+\textit{Design and Analysis of Computer Algorithms}. 
+University of Maryland Department of Computer Science.
+\\\texttt{http://www.cs.umd.edu/class/fall2013/cmsc451/Lects/}
+
+\bibitem{purd} 
+\textit{Computational Geometry}. 
+Purdue University.
+\\\texttt{https://www.cs.purdue.edu/homes/ayg/CS251/slides/chap15d.pdf}
+
+\end{thebibliography}
+
+\end{document}
