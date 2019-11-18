@@ -58,6 +58,9 @@ def main():
                 # shortestDistLine.setOutline("white")
                 shortestDistLine.setWidth(3)
                 shortestDistLine.draw(win)
+            else:
+                shortestDistLine.undraw()
+                shortestDistLine.draw(win)
             l.setFill(color_rgb(50, 50, 50))
 
             t.setText(str(round(100*compareCount/(((N*N) - N)/2), 1))+"%")
@@ -88,4 +91,5 @@ def dist(a, b):
 
 if __name__ == "__main__":
     main()
+    input("")
     print("done")

@@ -42,8 +42,8 @@ def main():
     minimum = locate(points, yPoints)
     print("MINIMUM: ", minimum)
     print("COMPARES: ", compareCount)
-    print("N^2        = {}\nN log(N^2) = {}\nN log(N)   = {}\nN          = {}"
-        .format(N**2, N*math.log(N**2, 2), N*math.log(N, 2), N))
+    # print("N^2        = {}\nN log(N^2) = {}\nN log(N)   = {}\nN          = {}"
+    #     .format(N**2, N*math.log(N**2, 2), N*math.log(N, 2), N))
 
 def getPoints():
     with open(sys.argv[1], "r") as inPoints:
@@ -160,11 +160,13 @@ def dist(a, b):
     else:
         l.setWidth(1)
         l.setFill("grey")
+        shortestDistLine.undraw()
+        shortestDistLine.draw(win)
         # l.undraw()
     return dist
 
 
 if __name__ == "__main__":
     main()
-    x = input("")
+    input("")
     print("done")
