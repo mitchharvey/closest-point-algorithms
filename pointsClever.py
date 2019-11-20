@@ -130,7 +130,6 @@ def ySorted(set, midX):
 
 # th(n)
 def restrictSet(set, lowerBound, higherBound):
-    import requests
     retset = []
     for x in set:
         if x.getX() >= lowerBound.getX() and x.getY() >= lowerBound.getY():
