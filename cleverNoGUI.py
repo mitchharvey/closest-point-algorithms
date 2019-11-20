@@ -3,6 +3,7 @@
 import math
 import sys
 import json
+import pointclass
 
 width = 800
 height = 800
@@ -30,6 +31,7 @@ def main():
         exit(1)
 
     global shortestDist, shortestDistLine, N
+    pointclass.setup()
     points = getPoints()
     N = len(points)
 

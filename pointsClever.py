@@ -6,6 +6,7 @@ from time import sleep
 import math
 import sys
 import json
+import pointclass
 
 N = 0
 width = 800
@@ -26,6 +27,7 @@ def main():
         exit(1)
 
     global shortestDist, shortestDistLine, N
+    pointclass.setup()
     points = getPoints()
     N = len(points)
 
@@ -128,6 +130,7 @@ def ySorted(set, midX):
 
 # th(n)
 def restrictSet(set, lowerBound, higherBound):
+    import requests
     retset = []
     for x in set:
         if x.getX() >= lowerBound.getX() and x.getY() >= lowerBound.getY():

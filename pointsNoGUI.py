@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 
-from graphics import *
 from random import *
-from time import sleep
 import math
 import sys
 import json
@@ -17,27 +15,25 @@ margin = 10
 maxDist = 999999
 
 compareCount = 0
-shortestDist = maxDist
-shortestDistLine = Line(Point(0,0), Point(0,0))
-win = GraphWin("Points", width, height)
-win.setBackground("black")
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def getX(self):
+        return self.x
+    
+    def getY(self):
+        return self.y
 
 def main():
-    global shortestDist, shortestDistLine, compareCount
+    global compareCount
     pointclass.setup()
     points = getPoints()
     N = len(points)
 
-    for p in points:
-        c = Circle(p, dotRadius)
-        c.setFill("white")
-        c.setOutline("white")
-        c.draw(win)
-
-    t = Text(Point(30, 30), "H")
-    t.setSize(20)
-    t.setTextColor("white")
-    t.draw(win)
+    shortestDist = maxDist
 
     # remove redundant i.e. b = a+1...n
     for ax in range(len(points)):
@@ -46,26 +42,11 @@ def main():
             b = points[bx]
             if a == b:
                 continue
-            l = Line(a, b)
-            l.setFill("white")
-            l.setWidth(3)
-            l.draw(win)
 
             d = dist(a, b)
-            if d < shortestDist:
-                shortestDistLine.undraw()
-                shortestDist = d
-                shortestDistLine = l.clone()
-                shortestDistLine.setFill(color_rgb(255, 10, 214))
-                # shortestDistLine.setOutline("white")
-                shortestDistLine.setWidth(3)
-                shortestDistLine.draw(win)
-            else:
-                shortestDistLine.undraw()
-                shortestDistLine.draw(win)
-            l.setFill(color_rgb(50, 50, 50))
 
-            t.setText(str(round(100*compareCount/(((N*N) - N)/2), 1))+"%")
+            if d < shortestDist:
+                shortestDist = d
 
     print("MINIMUM: ", shortestDist)
     print("COMPARES: ", compareCount)
@@ -93,5 +74,4 @@ def dist(a, b):
 
 if __name__ == "__main__":
     main()
-    input("")
     print("done")
